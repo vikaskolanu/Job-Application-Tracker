@@ -238,57 +238,7 @@ Open **[http://localhost:5173](http://localhost:5173)** in your browser (API req
 
 ---
 
-## 🚀 Deployment Guide
 
-### Option 1: Automatic Deployment via GitHub Pages (Built-in CI/CD)
-The repository includes a pre-configured GitHub Actions workflow (`.github/workflows/deploy.yml`) that automatically builds and deploys the application to GitHub Pages whenever you push to `main`.
-
-1. Go to your repository settings on GitHub: **`Settings` ➔ `Pages`**.
-2. Under **Build and deployment** > **Source**, select **`GitHub Actions`**.
-3. Push to `main` (or run the workflow manually under the **Actions** tab).
-4. Your site will be live at:
-   **`https://vikaskolanu.github.io/Job-Application-Tracker/`**
-
-### Option 2: Deploy Frontend to Vercel (Instant 1-Click)
-The repository includes pre-configured `vercel.json` rewrite settings. The client works offline and online using browser `localStorage` when deployed independently.
-
-1. Go to [Vercel](https://vercel.com).
-2. Click **Add New Project** and import `vikaskolanu/Job-Application-Tracker`.
-3. Set:
-   - **Framework Preset**: `Vite`
-   - **Root Directory**: `frontend` (or leave default if using root `vercel.json`)
-   - **Build Command**: `npm run build`
-   - **Output Directory**: `dist`
-4. Click **Deploy**.
-
-Alternatively, via Vercel CLI:
-```bash
-cd frontend
-npx vercel --prod
-```
-
-### Option 3: Deploy Full-Stack to Render (FastAPI + Built Frontend)
-Render will build the frontend assets and run the FastAPI server which serves both the REST API and the SPA from one single URL.
-
-1. Create a free account on [Render](https://render.com).
-2. Click **New +** > **Web Service**.
-3. Select your GitHub repository: `Job-Application-Tracker`.
-4. Configure:
-   - **Environment**: `Python`
-   - **Build Command**:
-     ```bash
-     cd frontend && npm install && npm run build && cd ../backend && pip install -r requirements.txt
-     ```
-   - **Start Command**:
-     ```bash
-     cd backend && python -m uvicorn main:app --host 0.0.0.0 --port $PORT
-     ```
-5. Click **Create Web Service**.
-
-### Option 4: Deploy to Railway
-1. Go to [Railway](https://railway.app).
-2. Click **New Project** > **Deploy from GitHub repo**.
-3. Select `Job-Application-Tracker`. Railway detects the included `Procfile` and deploys automatically.
 
 ---
 

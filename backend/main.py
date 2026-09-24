@@ -11,9 +11,11 @@ import logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-load_dotenv()
-
-app = FastAPI()
+app = FastAPI(
+    title="Job Application Tracker",
+    description="RESTful API for Job Application Tracker",
+    version="1.0.0"
+)
 
 app.add_middleware(
     CORSMiddleware,
@@ -22,6 +24,9 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+from routes.applications import router as applications_router
+app.include_router(applications_router)
 
 MONGO_URI = os.getenv("MONGO_URI")
 client = AsyncIOMotorClient(MONGO_URI)
@@ -68,9 +73,9 @@ class Contribution(BaseModel):
     pyq: Optional[PYQ] = None
     post: Optional[Post] = None
 
-@app.get("/")
-async def root():
-    return {"message": "IIT Goa Placement Portal Backend"}
+@app.get("/api/health")
+async def health_check():
+    return {"status": "ok", "message": "College Placement Tracker API"}
 
 @app.get("/companies/")
 async def get_companies(year: Optional[int] = None):
@@ -158,6 +163,28 @@ async def contribute_to_company(company_id: str, contribution: Contribution):
             array_filters=[{"elem.role": {"$exists": True}}]
         )
     return {"message": "Contribution added successfully", "company_id": company_id}
+
+from fastapi.staticfiles import StaticFiles
+from fastapi.responses import FileResponse
+
+frontend_dist = os.path.join(os.path.dirname(__file__), "..", "frontend", "dist")
+if os.path.exists(frontend_dist):
+    assets_dir = os.path.join(frontend_dist, "assets")
+    if os.path.exists(assets_dir):
+        app.mount("/assets", StaticFiles(directory=assets_dir), name="assets")
+
+    @app.api_route("/", methods=["GET", "HEAD"])
+    async def serve_index():
+        return FileResponse(os.path.join(frontend_dist, "index.html"))
+
+    @app.api_route("/{full_path:path}", methods=["GET", "HEAD"])
+    async def serve_spa(full_path: str):
+        if full_path.startswith("api") or full_path.startswith("companies") or full_path.startswith("docs") or full_path.startswith("openapi.json"):
+            raise HTTPException(status_code=404, detail="API route not found")
+        file_path = os.path.join(frontend_dist, full_path)
+        if os.path.exists(file_path) and os.path.isfile(file_path):
+            return FileResponse(file_path)
+        return FileResponse(os.path.join(frontend_dist, "index.html"))
 
 if __name__ == "__main__":
     import uvicorn
